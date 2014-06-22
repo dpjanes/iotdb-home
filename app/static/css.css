@@ -1,0 +1,37 @@
+h1, h2, h3, h4, h5, p {
+    font-weight: 200;
+}
+h1 {
+    border-bottom: 1px solid #EEE;
+    transform: scaleY(0.5);
+    margin-top: 30px;
+}
+h1:first {
+    margin-top: 10px;
+}
+span.floor {
+    font-size: 12px;
+    color: #999;
+    top: 22px;
+    position: relative;
+}
+h2 {
+    font-size: 22px;
+}
+img.action {
+    width: 32px;
+    height: 32px;
+    margin-right: 12px;
+}
+#id_boolean_picker {
+    width: 200px;
+    height: 32px;
+    background: #CCC;
+}
+input.collect {
+    position: relative;
+    top: 0px;
+}
+pre {
+    margin-top: 15px;
+}

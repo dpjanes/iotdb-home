@@ -1,0 +1,26 @@
+<div ng-repeat="room in rooms">
+    <h1 ng-class="$first ? 'first' : ''">
+        {{ room.room }}
+        <span class="floor pull-right">{{ room.floor }}</span>
+    </h1>
+    <div ng-repeat="api_endpoint in room.api_endpoint">
+        <div ng-controller="EndpointController">
+            <h2>
+                {{ endpoint.name }}
+                <span class="pull-right"><input type="checkbox" class="collect" ng-model="selected" /></span>
+            </h2>
+            <div ng-controller="AttributesController" ng-if="endpoint">
+                <span ng-repeat="attribute in attributes">
+                    <span ng-if="attribute._control">
+                        <a ng-click="edit(endpoint,attribute,state)">{{ attribute._name }}</a>
+                        <span ng-if="state && state[attribute._reading] != null">[{{ state[attribute._reading] }}]</span>
+                        <span ng-if="!$last">&middot;</span>
+                    </span>
+                </span>
+                <pre>{{ state|json }}</pre>
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+<br />

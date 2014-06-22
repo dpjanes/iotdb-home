@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" href="../../assets/ico/favicon.ico">
+
+    <title>525 Wilson</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="jquery-minicolors/jquery.minicolors.css" />
+    <link rel="stylesheet" href="jquery.onoff/dist/jquery.onoff.css" />
+
+    <!-- Custom styles for this template -->
+
+    <!-- Just for debugging purposes. Don't actually copy this line! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+  <style type="text/css">
+h1, h2, h3, h4, h5, p {
+    font-weight: 200;
+}
+h1 {
+    border-bottom: 1px solid #EEE;
+    transform: scaleY(0.5);
+}
+h2 {
+    font-size: 22px;
+}
+img.action {
+    width: 32px;
+    height: 32px;
+    margin-right: 12px;
+}
+#id_boolean_picker {
+    width: 200px;
+    height: 32px;
+    background: #CCC;
+}
+  </style>
+
+
+<script>
+var js = {
+    modals : {
+        edit_color : function() {
+            $('#id_color_picker').minicolors({
+                inline: true,
+                theme: 'bootstrap'
+            })
+            $('#id_modal_color').modal({
+            })
+        },
+
+        edit_boolean : function() {
+            $('#id_boolean_picker').onoff()
+            $('#id_modal_boolean').modal({
+            })
+        },
+
+        end: null
+    },
+
+    end: null
+};
+</script>
+
+    <div class="container">
+
+        <h1>Kitchen</h1>
+        <h2>Hue Light 1</h2>
+        <div class="actions">
+        <a href="javascript:js.modals.edit_boolean()"><img src="picons/01.png" class="action"></a>
+        <a href="javascript:js.modals.edit_color()"><img src="picons/color.png" class="action"></a>
+        </div>
+
+        <h2>Hue Light 2</h2>
+        <div class="actions">
+        <a href="javascript:js.modals.edit_boolean()"><img src="picons/01.png" class="action"></a>
+        <a href="javascript:js.modals.edit_color()"><img src="picons/color.png" class="action"></a>
+        </div>
+
+    </div><!-- /.container -->
+
+
+<div class="modal fade" id="id_modal_color">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">Hue Light 1 &middot; color</h4>
+      </div>
+      <div class="modal-body">
+        <div id="id_color_picker"></div>
+        <div id="id_color_value"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="id_modal_boolean">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">Hue Light 1 &middot; on</h4>
+      </div>
+      <div class="modal-body">
+          <input id="id_boolean_picker"  type="checkbox" />
+      </div>
+    </div>
+  </div>
+</div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+	<script src="jquery-minicolors/jquery.minicolors.js"></script>
+	<script src="jquery.onoff/dist/jquery.onoff.js"></script>
+
+  </body>
+</html>
