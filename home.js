@@ -569,7 +569,9 @@ var mqtt_update_things = function(thing) {
  *  A change has been made to a thing
  */
 var mqtt_update_thing = function(thing) {
-    home_mqtt.publish('/api/endpoints/' + thing.thing_id() + '/state', '')
+    home_mqtt.publish(
+        '/api/endpoints/' + thing.thing_id() + '/state', 
+        JSON.stringify(thing.state(), null, 2))
 }
 
 if (1) {
@@ -588,6 +590,7 @@ if (1) {
         mqtt_update_things(thing)
 
         thing.on_change(function() {
+            console.log("+ state", thing.thing_id(), thing.state())
             mqtt_update_thing(thing)
         })
 

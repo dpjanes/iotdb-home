@@ -14,7 +14,13 @@ var editor = function(paramd) {
             }
         })
 }
+var visualizer = function(paramd) {
+    return {
+        color: paramd.value
+    }
+}
 try {
     js.editors['iot-js:color'] = editor;
+    js.visualizers['iot-js:color'] = visualizer;
 } catch (x) {
 }

@@ -35,3 +35,18 @@ input.collect {
 pre {
     margin-top: 15px;
 }
+a.control {
+    cursor: pointer;
+}
+
+div.attribute {
+    display: inline-block; 
+    margin-right: 5px;
+}
+div.attribute div {
+    display: block;
+}
+div.attribute .value {
+    color: #999;
+    display: none;
+}

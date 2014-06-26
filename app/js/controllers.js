@@ -79,26 +79,41 @@ var mqtt_js = {
                 payload: message.payloadString
             })
         }
-        catch(x) {
-            console.log("HERE:A")
+        catch (x) {
+            console.log("# unexpected exception", x)
         }
-
-
-        /*
-        try {
-            var value = $.parseJSON(message.payloadString);
-
-            mqtt_js.ui.update_html(message.destinationName, value);
-            js.ui.update_state(message.destinationName, value);
-        } catch (x) {
-            console.log("onMessageArrived", "unexpected exception", x);
-            return;
-        }
-        */
     },	
 
-    end : 0,
+    end : 0
 };
+var canvas_js = {
+    onoff: function(e_canvas) {
+        var context = e_canvas.getContext('2d');
+
+        var startPoint = (Math.PI/180)*0;
+        var endPoint = (Math.PI/180)*360;
+        
+        context.fillStyle = "#FFFF00";
+        context.strokeStyle = "#CCCCCC";
+        context.lineWidth = 8;
+        context.beginPath();
+        context.arc(24,24,20,startPoint,endPoint,true);
+        context.stroke();
+        context.fill();
+        context.closePath();
+        
+        context.fillStyle = "#666666";
+        context.font="14px Helvetica Neue";
+        context.textAlign = 'center';
+        context.fillText("off",24,28);
+    },
+
+    end : 0
+};
+
+var safe_apply = function(scope, fn) {
+    (scope.$$phase || scope.$root.$$phase) ? fn() : scope.$apply(fn);
+}
 
 
 angular.module('myApp.controllers', [])
@@ -124,7 +139,7 @@ angular.module('myApp.controllers', [])
             .error(function() {
             });
         $scope.$on("clear-checkbox", function(x0) {
-            $scope.$apply(function() {
+            safe_apply($scope, function() {
                 $scope.selected = false
             })
         })
@@ -153,11 +168,13 @@ angular.module('myApp.controllers', [])
             if ($scope.endpoint.api_endpoint_state != paramd.topic) {
                 return
             }
-            console.log(paramd)
+
             $http
                 .get($scope.endpoint.api_endpoint_state)
                 .success(function(data) {
-                    $scope.state = data
+                    safe_apply($scope, function() {
+                        $scope.state = data
+                    })
                 })
                 .error(function() {
                 });
@@ -206,7 +223,7 @@ angular.module('myApp.controllers', [])
             var js = $window.js
             var editor = js.editors[attribute._type]
             if (!editor) {
-                alert("no editor found attribute: " + attribute._type)
+                alert("# no editor found attribute: " + attribute._type)
                 return
             }
 
@@ -219,23 +236,31 @@ angular.module('myApp.controllers', [])
                 .empty()
                 .append(e_control)
 
-            try {
-            editor({
+            var paramd = {
+                modal: true,
                 value: state[attribute._reading],
                 base: endpoint.api_endpoint_state,
                 on_change: function(paramd) {
                     $rootScope.$broadcast("update-value", endpoint, attribute, paramd.value)
                     $scope.change(endpoint, attribute, paramd.value)
                 }
-            });
+            }
+            try {
+                editor(paramd)
             } catch (x) {
+                console.log("# unexpected editor exception", x)
+                paramd.modal = false
             }
 
-            $('#id_control_modal')
-                .modal({})
-                .on('hidden.bs.modal', function() {
-                    $rootScope.$broadcast("clear-checkbox")
-                })
+            if (paramd.modal) {
+                $('#id_control_modal')
+                    .modal({})
+                    .on('hidden.bs.modal', function() {
+                        $rootScope.$broadcast("clear-checkbox")
+                    })
+            } else {
+                $rootScope.$broadcast("clear-checkbox")
+            }
         }
   }])
   ;
