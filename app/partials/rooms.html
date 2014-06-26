@@ -1,9 +1,10 @@
 <div ng-repeat="room in rooms">
-    <h1 ng-class="$first ? 'first' : ''">
+    <div ng-if="room.api_endpoint.length" ng-init="ofirst = $first">
+    <h1 ng-class="$ofirst ? 'xfirst' : ''">
         {{ room.room }}
         <span class="floor pull-right">{{ room.floor }}</span>
     </h1>
-    <div ng-repeat="api_endpoint in room.api_endpoint" ng-if="room.api_endpoint">
+    <div ng-repeat="api_endpoint in room.api_endpoint">
         <div ng-controller="EndpointController">
             <h2>
                 {{ endpoint.name }}
@@ -28,6 +29,9 @@
             </div>
         </div>
     </div>
+    </div>
+    <!--
+    -->
 </div>
 <br />
 <br />

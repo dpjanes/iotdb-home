@@ -242,6 +242,8 @@ var make_api_endpoint = function(paramd) {
     }
 }
 
+/**
+ */
 var make_rooms = function() {
     var all_things = iot.things()
     precook_things(all_things)
@@ -282,6 +284,19 @@ var make_rooms = function() {
                 })
             }
         }
+    }
+
+    // unassigned places
+    if (grouped_thingd[''] !== undefined) {
+        rooms.push({
+            "location": "Unassigned",
+            "floor": "",
+            "room": "Unassigned",
+            "things": grouped_thingd['']
+
+            // "iotdb_place": "xxx",
+            // "api_room": make_api_room({ place_iri: place_iri })
+        })
     }
 
     return rooms
@@ -416,8 +431,12 @@ var webserver_endpoint = function(request, result) {
         return
     }
 
+    var name = thing.meta_thing().get("iot:name")
+    if (_.isEmpty(name)) {
+        name = thing.name
+    }
     var endpoint = {
-        "name": thing.meta_thing().get("iot:name"),
+        "name": name,
 
         "iotdb_thing": thing.thing_iri(),
         "iotdb_model": thing.model_iri(),
@@ -526,7 +545,7 @@ var plugins = function() {
         }
     }
 
-    console.log(plugind)
+    // console.log(plugind)
 }
 
 /**
