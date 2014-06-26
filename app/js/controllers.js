@@ -86,30 +86,6 @@ var mqtt_js = {
 
     end : 0
 };
-var canvas_js = {
-    onoff: function(e_canvas) {
-        var context = e_canvas.getContext('2d');
-
-        var startPoint = (Math.PI/180)*0;
-        var endPoint = (Math.PI/180)*360;
-        
-        context.fillStyle = "#FFFF00";
-        context.strokeStyle = "#CCCCCC";
-        context.lineWidth = 8;
-        context.beginPath();
-        context.arc(24,24,20,startPoint,endPoint,true);
-        context.stroke();
-        context.fill();
-        context.closePath();
-        
-        context.fillStyle = "#666666";
-        context.font="14px Helvetica Neue";
-        context.textAlign = 'center';
-        context.fillText("off",24,28);
-    },
-
-    end : 0
-};
 
 var safe_apply = function(scope, fn) {
     (scope.$$phase || scope.$root.$$phase) ? fn() : scope.$apply(fn);
@@ -130,11 +106,11 @@ angular.module('myApp.controllers', [])
             });
 
   }])
-  .controller('EndpointController', ['$scope', '$http', function($scope, $http) {
+  .controller('ThingController', ['$scope', '$http', function($scope, $http) {
         $http
-            .get($scope.api_endpoint)
+            .get($scope.api_thing)
             .success(function(data) {
-                $scope.endpoint = data
+                $scope.thing = data
             })
             .error(function() {
             });
@@ -150,14 +126,14 @@ angular.module('myApp.controllers', [])
     '$scope', '$http', '$window', '$rootScope',
     function($scope, $http, $window, $rootScope) {
         $http
-            .get($scope.endpoint.api_endpoint_state)
+            .get($scope.thing.api_thing_state)
             .success(function(data) {
                 $scope.state = data
             })
             .error(function() {
             });
         $http
-            .get($scope.endpoint.api_endpoint_attributes)
+            .get($scope.thing.api_thing_attributes)
             .success(function(data) {
                 $scope.attributes = data.attributes
             })
@@ -165,12 +141,12 @@ angular.module('myApp.controllers', [])
             });
 
         $scope.$on("mqtt", function(x0, paramd) {
-            if ($scope.endpoint.api_endpoint_state != paramd.topic) {
+            if ($scope.thing.api_thing_state != paramd.topic) {
                 return
             }
 
             $http
-                .get($scope.endpoint.api_endpoint_state)
+                .get($scope.thing.api_thing_state)
                 .success(function(data) {
                     safe_apply($scope, function() {
                         $scope.state = data
@@ -180,8 +156,8 @@ angular.module('myApp.controllers', [])
                 });
         })
 
-        $scope.$on("update-value", function(x0, endpoint, attribute, value) {
-            if (endpoint === $scope.endpoint) {
+        $scope.$on("update-value", function(x0, thing, attribute, value) {
+            if (thing === $scope.thing) {
                 return
             }
             if (!$scope.$parent.selected) {
@@ -200,13 +176,13 @@ angular.module('myApp.controllers', [])
                     continue
                 }
 
-                $scope.change($scope.endpoint, tattribute, value)
+                $scope.change($scope.thing, tattribute, value)
             }
         })
 
         // update a value via REST call
-        $scope.change = function(endpoint, attribute, value) {
-            var base = endpoint.api_endpoint_state 
+        $scope.change = function(thing, attribute, value) {
+            var base = thing.api_thing_state 
             var url = base
                 + "?" + attribute._code 
                 + "=" + encodeURIComponent(value)
@@ -219,7 +195,7 @@ angular.module('myApp.controllers', [])
         }
 
         // edit a value
-        $scope.edit = function(endpoint, attribute, state) {
+        $scope.edit = function(thing, attribute, state) {
             var js = $window.js
             var editor = js.editors[attribute._type]
             if (!editor) {
@@ -239,10 +215,10 @@ angular.module('myApp.controllers', [])
             var paramd = {
                 modal: true,
                 value: state[attribute._reading],
-                base: endpoint.api_endpoint_state,
+                base: thing.api_thing_state,
                 on_change: function(paramd) {
-                    $rootScope.$broadcast("update-value", endpoint, attribute, paramd.value)
-                    $scope.change(endpoint, attribute, paramd.value)
+                    $rootScope.$broadcast("update-value", thing, attribute, paramd.value)
+                    $scope.change(thing, attribute, paramd.value)
                 }
             }
             try {

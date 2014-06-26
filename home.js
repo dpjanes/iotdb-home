@@ -223,21 +223,21 @@ var make_api_room = function(paramd) {
     return null
 }
 
-var make_api_endpoint = function(paramd) {
+var make_api_thing = function(paramd) {
     if (paramd.root) {
-        return "/api/endpoints"
+        return "/api/things"
     }
     if (paramd.thing) {
         paramd.thing_id = paramd.thing.thing_id()
     }
     if (paramd.thing_id) {
-        var api_endpoint = "/api/endpoints/" + paramd.thing_id
+        var api_thing = "/api/things/" + paramd.thing_id
         if (paramd.attributes) {
-            return api_endpoint + "/attributes"
+            return api_thing + "/attributes"
         } else if (paramd.state) {
-            return api_endpoint + "/state"
+            return api_thing + "/state"
         } else {
-            return api_endpoint
+            return api_thing
         }
     }
 }
@@ -323,7 +323,7 @@ var webserver_api = function(request, result) {
     console.log("+ webserver_api")
     var jd = {
         "api_rooms": make_api_room({ root: true }),
-        "api_endpoints": make_api_endpoint({ root: true }),
+        "api_things": make_api_thing({ root: true }),
     }
 
     result.set('Content-Type', 'text/plain');
@@ -340,7 +340,7 @@ var webserver_rooms = function(request, result) {
     for (var ri in rooms) {
         var room = rooms[ri]
 
-        var endpoint_iris = []
+        var thing_iris = []
         var rd = {
             "location": room.location,
             "floor": room.floor,
@@ -348,13 +348,13 @@ var webserver_rooms = function(request, result) {
 
             "iotdb_place": room.iotdb_place,
             "api_room": room.api_room,
-            "api_endpoint": endpoint_iris
+            "api_things": thing_iris
         }
         rds.push(rd)
 
         for (var ri in room.things) {
             var thing = room.things[ri]
-            endpoint_iris.push("/api/endpoints/" + thing.thing_id())
+            thing_iris.push("/api/things/" + thing.thing_id())
         }
     }
 
@@ -382,7 +382,7 @@ var webserver_room = function(request, result) {
             continue
         }
 
-        var endpoint_iris = []
+        var thing_iris = []
         var rd = {
             "location": room.location,
             "floor": room.floor,
@@ -390,12 +390,12 @@ var webserver_room = function(request, result) {
 
             "iotdb_place": room.iotdb_place,
             "api_room": room.api_room,
-            "api_endpoint": endpoint_iris
+            "api_things": thing_iris
         }
 
         for (var ri in room.things) {
             var thing = room.things[ri]
-            endpoint_iris.push(make_api_endpoint({ thing: thing }))
+            thing_iris.push(make_api_thing({ thing: thing }))
         }
 
         result.set('Content-Type', 'text/plain');
@@ -405,17 +405,17 @@ var webserver_room = function(request, result) {
 
 /**
  */
-var webserver_endpoints = function(request, result) {
-    console.log("+ webserver_endpoints")
-    var api_endpoints = []
+var webserver_things = function(request, result) {
+    console.log("+ webserver_things")
+    var api_things = []
     var jd = {
-        "api_endpoint" : api_endpoints
+        "api_things" : api_things
     }
 
     var things = iot.things()
     for (var ti = 0; ti < things.length; ti++) {
         var thing = things[ti];
-        api_endpoints.push(make_api_endpoint({ thing: thing }))
+        api_things.push(make_api_thing({ thing: thing }))
     }
 
     result.set('Content-Type', 'text/plain');
@@ -424,8 +424,8 @@ var webserver_endpoints = function(request, result) {
 
 /**
  */
-var webserver_endpoint = function(request, result) {
-    console.log("+ webserver_endpoint")
+var webserver_thing = function(request, result) {
+    console.log("+ webserver_thing")
     var thing = get_thing(request.params.thing_id)
     if (!thing) {
         return
@@ -435,26 +435,26 @@ var webserver_endpoint = function(request, result) {
     if (_.isEmpty(name)) {
         name = thing.name
     }
-    var endpoint = {
+    var thing = {
         "name": name,
 
         "iotdb_thing": thing.thing_iri(),
         "iotdb_model": thing.model_iri(),
         "iotdb_place": thing.place_iri(),
 
-        "api_endpoint": make_api_endpoint({ thing: thing }),
-        "api_endpoint_attributes": make_api_endpoint({ thing: thing, attributes: true }),
-        "api_endpoint_state": make_api_endpoint({ thing: thing, state: true }),
+        "api_thing": make_api_thing({ thing: thing }),
+        "api_thing_attributes": make_api_thing({ thing: thing, attributes: true }),
+        "api_thing_state": make_api_thing({ thing: thing, state: true }),
         "api_room": make_api_room({ thing: thing })
     }
 
     result.set('Content-Type', 'text/plain');
-    result.send(JSON.stringify(endpoint, null, 2))
+    result.send(JSON.stringify(thing, null, 2))
 }
 
 /**
  */
-var webserver_endpoint_state = function(request, result) {
+var webserver_thing_state = function(request, result) {
     console.log("+ webserver_state")
     var thing = get_thing(request.params.thing_id)
     if (!thing){
@@ -469,7 +469,7 @@ var webserver_endpoint_state = function(request, result) {
 
 /**
  */
-var webserver_endpoint_attributes = function(request, result) {
+var webserver_thing_attributes = function(request, result) {
     console.log("+ webserver_attributes")
     var thing = get_thing(request.params.thing_id)
     if (!thing){
@@ -555,10 +555,11 @@ var webserver = function() {
 
     app.get('/', webserver_home)
     app.use('/', express.static(__dirname + '/app'))
-    app.get('/api/endpoints', webserver_endpoints)
-    app.get('/api/endpoints/:thing_id', webserver_endpoint)
-    app.get('/api/endpoints/:thing_id/state', webserver_endpoint_state)
-    app.get('/api/endpoints/:thing_id/attributes', webserver_endpoint_attributes)
+    app.get('/api', webserver_api)
+    app.get('/api/things', webserver_things)
+    app.get('/api/things/:thing_id', webserver_thing)
+    app.get('/api/things/:thing_id/state', webserver_thing_state)
+    app.get('/api/things/:thing_id/attributes', webserver_thing_attributes)
     app.get('/api/rooms', webserver_rooms)
     app.get('/api/rooms/:room_id', webserver_room)
 
@@ -581,7 +582,7 @@ var mqtt_setup = function() {
  *  A new thing has appeared
  */
 var mqtt_update_things = function(thing) {
-    home_mqtt.publish('/api/endpoints/' + thing.thing_id())
+    home_mqtt.publish('/api/things/' + thing.thing_id())
 }
 
 /**
@@ -589,7 +590,7 @@ var mqtt_update_things = function(thing) {
  */
 var mqtt_update_thing = function(thing) {
     home_mqtt.publish(
-        '/api/endpoints/' + thing.thing_id() + '/state', 
+        '/api/things/' + thing.thing_id() + '/state', 
         JSON.stringify(thing.state(), null, 2))
 }
 

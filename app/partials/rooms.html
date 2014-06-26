@@ -1,19 +1,22 @@
 <div ng-repeat="room in rooms">
-    <div ng-if="room.api_endpoint.length" ng-init="ofirst = $first">
+    <div ng-if="room.api_things.length" ng-init="ofirst = $first">
     <h1 ng-class="$ofirst ? 'xfirst' : ''">
         {{ room.room }}
         <span class="floor pull-right">{{ room.floor }}</span>
     </h1>
-    <div ng-repeat="api_endpoint in room.api_endpoint">
-        <div ng-controller="EndpointController">
+    <!--
+    <pre>{{ room|json }}</pre>
+    -->
+    <div ng-repeat="api_thing in room.api_things">
+        <div ng-controller="ThingController">
             <h2>
-                {{ endpoint.name }}
+                {{ thing.name }}
                 <span class="pull-right"><input type="checkbox" class="collect" ng-model="selected" /></span>
             </h2>
             <!--
-            <pre>{{ endpoint|json }}</pre>
+            <pre>{{ thing|json }}</pre>
             -->
-            <div ng-controller="AttributesController" ng-if="endpoint">
+            <div ng-controller="AttributesController" ng-if="thing">
                 <span ng-repeat="attribute in attributes">
                     <div ng-if="attribute._control" class="attribute">
                         <center>

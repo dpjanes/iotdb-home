@@ -65,7 +65,7 @@ angular.module('myApp.directives', [])
         scope: false,
         restrict: 'AE',
         replace: true,
-        template: '<a class="control" ng-click="edit(endpoint,attribute,state)"><canvas width="48" height="48"></canvas></a>',
+        template: '<a class="control" ng-click="edit(thing,attribute,state)"><canvas width="48" height="48"></canvas></a>',
         link: function($scope, j_a, attrs) {
             var e_canvas = j_a.find("canvas")[0]
             var context = e_canvas.getContext('2d');
