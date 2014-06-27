@@ -601,8 +601,10 @@ if (1) {
 if (1) {
     var iot = new iotdb.IOT({ 
         models_path: "node_modules/iotdb-models/ots",
+        load_models: true,
+        load_drivers: true,
         iotdb_places_get: true,
-        discover: false
+        discover: true
     })
     iot.on_thing(function(iot, thing) {
         console.log("+ NEW THING", thing.thing_id())
@@ -618,8 +620,5 @@ if (1) {
     })
     iot.on_things(function(iot) {
         iotdb.helpers.dump_things(iot, iot.things())
-    })
-    iot.on_ready(function(iot) {
-        iot.discover() // ":upnp")
     })
 }
