@@ -7,9 +7,9 @@ var editor = function(paramd) {
 
 var visualizer = function(paramd) {
     var options = [ "0", "1" ]
-    if (options.purpose == "iot-attribute:on") {
+    if (paramd.purpose == "iot-attribute:on") {
         options = [ "off", "on" ]
-    } else if (options.purpose == "iot-attribute:open") {
+    } else if (paramd.purpose == "iot-attribute:open") {
         options = [ "⟫|⟪", "⟪|⟫" ]
     }
 

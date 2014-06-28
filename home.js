@@ -622,27 +622,6 @@ if (1) {
         iotdb_places_get: true,
         discover: true
     })
-    /*
-    iot.on_register_things(function() {
-        var arduino_tty = iot.cfg_get("arduino_tty")
-        iot.discover({
-            model: "FirmataInputBoolean",
-            driver_iri: ":firmata",
-            initd : {
-                api: arduino_tty,
-                pin: "2"
-            }
-        })
-        iot.discover({
-            model: "FirmataInputUnit",
-            driver_iri: ":firmata",
-            initd : {
-                api: arduino_tty,
-                pin: 0
-            }
-        })
-    })
-    */
     iot.on_thing(function(iot, thing) {
         console.log("+ NEW THING", thing.thing_id())
         home_page = null
