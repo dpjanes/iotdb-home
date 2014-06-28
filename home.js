@@ -600,7 +600,7 @@ if (1) {
 
 if (1) {
     var iot = new iotdb.IOT({ 
-        models_path: "node_modules/iotdb-models/ots",
+        models_path: "node_modules/iotdb-models//",
         load_models: true,
         load_drivers: true,
         iotdb_places_get: true,
