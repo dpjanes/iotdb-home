@@ -18,15 +18,18 @@
             -->
             <div ng-controller="AttributesController" ng-if="thing">
                 <span ng-repeat="attribute in attributes">
-                    <div ng-if="attribute._control" class="attribute">
+                    <div class="attribute">
                         <center>
                         <div class="display"><attribute-display /></div>
                         <div class="name">{{ attribute._name }}</div>
                         <div class="value" ng-if="state && state[attribute._reading] != null">{{ state[attribute._reading] }}</div>
                         </center>
                     </div>
+                    <pre>{{ attribute|json }}</pre>
+                    <!--
+                    -->
                 </span>
-                <!--
+                    <!--
                 <pre>{{ state|json }}</pre>
                 -->
             </div>

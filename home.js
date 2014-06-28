@@ -142,6 +142,21 @@ var precook_attributes = function(thing) {
             }
         }
 
+        var minimum = _.ld_get_first(cat, 'iot-js:minimum', null)
+        if (minimum != null) {
+            atd._minimum = minimum
+        }
+
+        var maximum = _.ld_get_first(cat, 'iot-js:maximum', null)
+        if (maximum != null) {
+            atd._maximum = maximum
+        }
+
+        var unit = _.ld_get_first(cat, 'iot:unit')
+        if (maximum) {
+            atd._unit = unit
+        }
+
         var purpose = _.ld_get_first(cat, 'iot:purpose')
         if (purpose) {
             atd._purpose = purpose
@@ -603,9 +618,31 @@ if (1) {
         models_path: "node_modules/iotdb-models//",
         load_models: true,
         load_drivers: true,
+        load_things: true,
         iotdb_places_get: true,
         discover: true
     })
+    /*
+    iot.on_register_things(function() {
+        var arduino_tty = iot.cfg_get("arduino_tty")
+        iot.discover({
+            model: "FirmataInputBoolean",
+            driver_iri: ":firmata",
+            initd : {
+                api: arduino_tty,
+                pin: "2"
+            }
+        })
+        iot.discover({
+            model: "FirmataInputUnit",
+            driver_iri: ":firmata",
+            initd : {
+                api: arduino_tty,
+                pin: 0
+            }
+        })
+    })
+    */
     iot.on_thing(function(iot, thing) {
         console.log("+ NEW THING", thing.thing_id())
         home_page = null

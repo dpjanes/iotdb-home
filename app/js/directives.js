@@ -11,7 +11,9 @@ var draw_circle = function(context, $scope) {
         lineWidth: 8,
         centerX: 24,
         centerY: 24,
-        radius: 20
+        radius: 20,
+        guageColor: "#666666",
+        guage: null
     }
 
     if ($scope && $scope.attribute && $scope.state) {
@@ -23,6 +25,7 @@ var draw_circle = function(context, $scope) {
         } else {
             var vd = visualizer({
                 value: $scope.state[reading_key],
+                purpose: $scope.attribute._purpose,
                 type: type
             })
 
@@ -35,6 +38,12 @@ var draw_circle = function(context, $scope) {
             if (vd.textColor) {
                 paramd.textColor = vd.textColor
             }
+            if (vd.guage) {
+                paramd.guage = vd.guage
+            }
+            if (vd.guageColor) {
+                paramd.guageColor = vd.guageColor
+            }
         }
     }
 
@@ -45,11 +54,35 @@ var draw_circle = function(context, $scope) {
     context.strokeStyle = paramd.strokeStyle
     context.lineWidth = paramd.lineWidth;
 
+    context.clearRect(0, 0, 48, 48)
+
     context.beginPath();
     context.arc(paramd.centerX,paramd.centerY,paramd.radius,startPoint,endPoint,true);
     context.stroke();
     context.fill();
     context.closePath();
+    /*
+    */
+
+    if (paramd.guage !== null) {
+        var endPoint = (Math.PI/180)*135
+        var startPoint = (Math.PI/180)*(135+270*paramd.guage)
+        context.strokeStyle = paramd.guageColor;
+        
+        context.beginPath();
+        context.arc(paramd.centerX,paramd.centerY,paramd.radius,startPoint,endPoint,true);
+        context.stroke();
+        context.fill();
+    }
+
+    var startPoint = (Math.PI/180)*0;
+    var endPoint = (Math.PI/180)*360;
+    context.beginPath();
+    context.arc(paramd.centerX,paramd.centerY,paramd.radius,startPoint,endPoint,true);
+    context.fill();
+    context.closePath();
+    /*
+    */
 
     if (paramd.text) {
         context.fillStyle = paramd.textColor
