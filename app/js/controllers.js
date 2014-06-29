@@ -7,15 +7,10 @@ var mqtt_js = {
 
     init : function($rootScope) {
         mqtt_js.$rootScope = $rootScope
-        var locationd = {
-            hostname: 'mqtt.iotdb.org',
-            port: 8000,
-            clientid: "iot-" + ("" + Math.random()).substring(2)
-        };
         mqtt_js.client = new Messaging.Client(
-            locationd.hostname, 
-            locationd.port,
-            locationd.clientid
+            js.settingsd.mqttd.mqtt_host, 
+            js.settingsd.mqttd.mqtt_websocket,
+            "home" + ("" + Math.random()).substring(2)
         );
         mqtt_js.client.onConnectionLost = mqtt_js.onConnectionLost;
         mqtt_js.client.onMessageArrived = mqtt_js.onMessageArrived;
@@ -30,7 +25,9 @@ var mqtt_js = {
             onFailure:mqtt_js.onFailure
         }
 
-        console.log("- mqtt_js.init", "calling connect", locationd)
+        console.log("- mqtt_js.init", "calling websocket connect", 
+            js.settingsd.mqttd.mqtt_host, 
+            js.settingsd.mqttd.mqtt_websocket)
         mqtt_js.client_when = new Date().getTime();
         mqtt_js.client.connect(connectd);
     },
@@ -196,6 +193,9 @@ angular.module('myApp.controllers', [])
 
         // edit a value
         $scope.edit = function(thing, attribute, state) {
+            if (!attribute._control) {
+                return
+            }
             var js = $window.js
             var editor = js.editors[attribute._type]
             if (!editor) {

@@ -12,6 +12,7 @@
 
 var iotdb = require("iotdb")
 var _ = iotdb.helpers
+var cfg = iotdb.cfg
 var express = require('express');
 var path = require("path")
 var swig = require("swig")
@@ -39,7 +40,7 @@ var settingsd = {
         host: null,
         port: 3000
     },
-    open_browser: false
+    open_browser: true
 }
 
 /**
@@ -66,7 +67,30 @@ var settings_ip = function() {
 }
 
 
+/**
+ *  Settings can be modified in ".iotdb/home.json".
+ *  Note it deals with Objects cleverly as updates,
+ *  not as replacements
+ */
 var settings_main = function() {
+    cfg.cfg_load_json([ ".iotdb/home.json" ], function(paramd) {
+        if (!paramd.doc) {
+            return
+        }
+
+        for (var key in paramd.doc) {
+            var nvalue = paramd.doc[key]
+            var ovalue = settingsd[key]
+            if (ovalue === undefined) {
+                settingsd[key] = nvalue
+            } else if (_.isObject(ovalue)) {
+                _.extend(ovalue, nvalue)
+            } else {
+                settingsd[key] = nvalue
+            }
+        }
+    })
+
     settings_ip()
 }
 
