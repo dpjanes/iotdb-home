@@ -17,8 +17,117 @@ var path = require("path")
 var swig = require("swig")
 var node_fs = require("fs")
 var mqtt = require("mqtt")
+var os = require('os');
+var open = require('open');
 
 var home_mqtt = require("./home_mqtt")
+
+
+/* --- Settings section --- */
+var iot = null
+var settingsd = {
+    ip: "127.0.0.1",
+    mqttd: {
+        local: false,
+        verbose: false,
+        prefix: null,
+        mqtt_host: 'mqtt.iotdb.org',
+        mqtt_port: 1883,
+        mqtt_websocket: 8000
+    },
+    webserverd: {
+        host: null,
+        port: 3000
+    },
+    open_browser: false
+}
+
+/**
+ *  Try to figure out our IP address
+ */
+var settings_ip = function() {
+    var ifaces = os.networkInterfaces();
+    for (var dev in ifaces) {
+        var devs = ifaces[dev]
+        for (var di in devs) {
+            var details = devs[di]
+
+            if (details.family != 'IPv4') {
+                continue
+            }
+            if (details.address == '127.0.0.1') {
+                continue
+            }
+
+            settingsd.ip = details.address
+            return
+        }
+    }
+}
+
+
+var settings_main = function() {
+    settings_ip()
+}
+
+/* --- MQTT section --- */
+
+
+var _mqtt_initialized = false
+
+/**
+ *  Called once to set up MQTT.
+ *  <p>
+ *  Code-wise it waits until IOTDB is
+ *  spun up so we can grab the username
+ */
+var mqtt_main = function() {
+    var mqttd = settingsd.mqttd
+    if (mqttd.local) {
+        mqttd.mqtt_host = settingsd.ip
+    }
+
+    iot.on_ready(function() {
+        mqttd.prefix = '/u/' + iot.username + '/home'
+
+        home_mqtt.create_server(mqttd)
+        home_mqtt.create_bridge(mqttd)
+
+        _mqtt_initialized = true
+    })
+}
+
+/**
+ *  A new thing has appeared
+ */
+var mqtt_update_things = function(thing) {
+    if (!_mqtt_initialized) {
+        return
+    }
+
+    var mqttd = settingsd.mqttd
+    home_mqtt.publish(
+        mqttd, 
+        mqttd.prefix + '/api/things/' + thing.thing_id(),
+        ""
+    )
+}
+
+/**
+ *  A change has been made to a thing
+ */
+var mqtt_update_thing = function(thing) {
+    if (!_mqtt_initialized) {
+        return
+    }
+
+    var mqttd = settingsd.mqttd
+    home_mqtt.publish(
+        mqttd,
+        mqttd.prefix + '/api/things/' + thing.thing_id() + '/state', 
+        JSON.stringify(thing.state(), null, 2)
+    )
+}
 
 /*
  *  Do processing on things to make
@@ -511,7 +620,8 @@ var webserver_home = function(request, result) {
     if (!home_page) {
         var home_template = path.join(__dirname, 'app', 'index.html')
         home_page = swig.renderFile(home_template, {
-            plugind: plugind
+            plugind: plugind,
+            settingsd: settingsd
         })
     }
 
@@ -526,7 +636,7 @@ var webserver_home = function(request, result) {
 var plugind = {
 }
 
-var plugins = function() {
+var webserver_contols = function() {
     var dir_app = "app"
     var dir_controls = "static/controls"
     
@@ -563,9 +673,13 @@ var plugins = function() {
     // console.log(plugind)
 }
 
-/**
- */
-var webserver = function() {
+
+var webserver_express = function() {
+    var wsd = settingsd.webserverd
+    if (wsd.host == null) {
+        wsd.host = settingsd.ip
+    }
+
     var app = express();
 
     app.get('/', webserver_home)
@@ -578,43 +692,20 @@ var webserver = function() {
     app.get('/api/rooms', webserver_rooms)
     app.get('/api/rooms/:room_id', webserver_room)
 
-    app.listen(3000);
-}
-
-if (1) {
-    plugins()
-    webserver()
+    app.listen(wsd.port);
 }
 
 /**
  */
-var mqtt_setup = function() {
-    home_mqtt.create_server()
-    home_mqtt.create_bridge()
+var webserver_main = function() {
+    webserver_contols()
+    webserver_express()
 }
 
 /**
- *  A new thing has appeared
  */
-var mqtt_update_things = function(thing) {
-    home_mqtt.publish('/api/things/' + thing.thing_id())
-}
-
-/**
- *  A change has been made to a thing
- */
-var mqtt_update_thing = function(thing) {
-    home_mqtt.publish(
-        '/api/things/' + thing.thing_id() + '/state', 
-        JSON.stringify(thing.state(), null, 2))
-}
-
-if (1) {
-    mqtt_setup()
-}
-
-if (1) {
-    var iot = new iotdb.IOT({ 
+var iotdb_main = function() {
+    iot = new iotdb.IOT({ 
         models_path: "node_modules/iotdb-models//",
         load_models: true,
         load_drivers: true,
@@ -637,4 +728,15 @@ if (1) {
     iot.on_things(function(iot) {
         iotdb.helpers.dump_things(iot, iot.things())
     })
+}
+
+/* --- the program -- */
+
+settings_main()
+iotdb_main()
+webserver_main()
+mqtt_main()
+
+if (settingsd.open_browser) {
+    open("http://" + settingsd.webserverd.host + ":" + settingsd.webserverd.port)
 }

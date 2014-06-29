@@ -8,7 +8,6 @@ var mqtt_js = {
     init : function($rootScope) {
         mqtt_js.$rootScope = $rootScope
         var locationd = {
-            xhostname: '127.0.0.1',
             hostname: 'mqtt.iotdb.org',
             port: 8000,
             clientid: "iot-" + ("" + Math.random()).substring(2)
@@ -57,8 +56,9 @@ var mqtt_js = {
     },
 
     onConnect : function() {
-      console.log("- mqtt_js.onConnect");
-      mqtt_js.client.subscribe("/api/#");
+        var topic = js.settingsd.mqttd.prefix + "/api/#"
+        console.log("- mqtt_js.onConnect", topic);
+        mqtt_js.client.subscribe(topic)
     },
 
     onConnectionLost : function(responseObject) {
@@ -75,7 +75,7 @@ var mqtt_js = {
 
         try {
             mqtt_js.$rootScope.$broadcast("mqtt", {
-                topic: message.destinationName,
+                topic: message.destinationName.substring(js.settingsd.mqttd.prefix.length),
                 payload: message.payloadString
             })
         }

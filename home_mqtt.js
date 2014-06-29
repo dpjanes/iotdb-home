@@ -5,7 +5,11 @@
  *  IOTDB
  *  2014-06-21
  *
- *  A simple MQTT server
+ *  A simple MQTT server with a WebSockets
+ *  bridge. 
+ *
+ *  XXX this server / bridge code isn't working
+ *  just yet so we're using IOTDB's MQTT server
  */
 
 "use strict";
@@ -15,31 +19,37 @@ var util = require('util');
 var url = require('url');
 var mqtt_ws = require('./mqtt-ws')
 
-exports.create_server = function(verbose) {
-    return
+/**
+ *  Create an MQTT server
+ */
+exports.create_server = function(mqttd) {
+    if (!mqttd.local) {
+        console.log("- home_mqtt.create_server: not local, so not doing this")
+        return
+    }
 
-    verbose = 1
+    mqttd.verbose = 1
     mqtt.createServer(function(client) {
       var self = this;
 
       if (!self.clients) self.clients = {};
 
       client.on('connect', function(packet) {
-        if (verbose) console.log('- create_server.connect')
+        if (mqttd.verbose) console.log('- create_server.connect')
         client.connack({returnCode: 0});
         client.id = packet.clientId;
         self.clients[client.id] = client;
       });
 
       client.on('publish', function(packet) {
-        if (verbose) console.log('- create_server.publish')
+        if (mqttd.verbose) console.log('- create_server.publish')
         for (var k in self.clients) {
           self.clients[k].publish({topic: packet.topic, payload: packet.payload});
         }
       });
 
       client.on('subscribe', function(packet) {
-        if (verbose) console.log('- create_server.subscribe')
+        if (mqttd.verbose) console.log('- create_server.subscribe')
         var granted = [];
         for (var i = 0; i < packet.subscriptions.length; i++) {
           granted.push(packet.subscriptions[i].qos);
@@ -49,39 +59,45 @@ exports.create_server = function(verbose) {
       });
 
       client.on('pingreq', function(packet) {
-        if (verbose) console.log('- create_server.pingreq')
+        if (mqttd.verbose) console.log('- create_server.pingreq')
         client.pingresp();
       });
 
       client.on('disconnect', function(packet) {
-        if (verbose) console.log('- create_server.disconnect')
+        if (mqttd.verbose) console.log('- create_server.disconnect')
         client.stream.end();
       });
 
       client.on('close', function(err) {
-        if (verbose) console.log('- create_server.close')
+        if (mqttd.verbose) console.log('- create_server.close')
         delete self.clients[client.id];
       });
 
       client.on('error', function(err) {
-        if (verbose) console.log('- create_server.error')
+        if (mqttd.verbose) console.log('- create_server.error')
         client.stream.end();
         console.log('# create_server.error', err)
       });
-    }).listen(1883);
+    }).listen(mqttd.mqtt_port);
 
 }
 
-exports.create_bridge = function() {
-    return
+/**
+ *  Create an MQTT WebSockets bridge
+ */
+exports.create_bridge = function(mqttd) {
+    if (!mqttd.local) {
+        console.log("- home_mqtt.create_bridge: not local, so not doing this")
+        return
+    }
 
     var bridge = mqtt_ws.createBridge({
         mqtt: {
             host: "localhost",
-            port: 1883,
+            port: mqttd.mqtt_port,
         },
         websocket: {
-            port: 8000
+            port: mqttd.mqtt_websocket,
         }
     })
 
@@ -152,11 +168,24 @@ exports.create_bridge = function() {
     });
 }
 
-exports.publish = function(topic, data) {
-    // var client = mqtt.createClient(1883, 'localhost');
-    var client = mqtt.createClient(1883, 'mqtt.iotdb.org');
+var client = null
+
+/**
+ *  Publish an MQTT message
+ */
+exports.publish = function(mqttd, topic, data) {
+    if (client == null) {
+        console.log("- mqtt_home.publish", "connecting", mqttd.mqtt_port, mqttd.mqtt_host)
+        client = mqtt.createClient(mqttd.mqtt_port, mqttd.mqtt_host)
+        client.on('error', function() {
+            console.log("# mqtt_home.publish/error", "unexpected", arguments)
+        })
+        client.on('clone', function() {
+            console.log("# mqtt_home.publish/error", "unexpected", arguments)
+        })
+    }
+
     client.publish(topic, data)
-    client.end()
 
     console.log("- home_mqtt.publish", topic, data)
 }

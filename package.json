@@ -14,6 +14,7 @@
     "dependencies" : {
         "iotdb": ">=0.1.8",
         "iotdb-models": "git://github.com/dpjanes/iotdb-models",
+        "open": ">=0.0.5",
         "swig": ">=1.3.2",
         "mqtt": ">=0.3.10",
         "ws": ">=0.4.31",

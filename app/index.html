@@ -20,6 +20,7 @@
     {% endfor %}
     <script>
 var js = {
+    settingsd: {{ settingsd|json(2)|safe }},
     editors : {},
     visualizers : {},
 }
