@@ -8,11 +8,15 @@ var editor = function(paramd) {
 }
 
 var visualizer = function(paramd) {
-    console.log(paramd)
+    console.log("HERE:ABC", paramd)
     var d = {
         color: "#F9F9F9",
-        text: "",
-        guage: paramd.value
+        text: ""
+    }
+
+    if (paramd.unit == "iot-unit::math.fraction.unit") {
+        d.guage = paramd.value
+    } else if ((paramd.minimum !== undefined) && (paramd.maximum !== undefined)) {
     }
 
     try {

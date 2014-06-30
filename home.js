@@ -210,10 +210,10 @@ var precook_attributes = function(thing) {
             cat._control = cid
             cat._reading = cid
         } 
-        if (_.ld_contains(cat, 'iot:role', 'iot:role-control')) {
+        if (_.ld_contains(cat, 'iot:role', 'iot-attribute:role-control')) {
             cat._control = cid
         }
-        if (_.ld_contains(cat, 'iot:role', 'iot:role-reading')) {
+        if (_.ld_contains(cat, 'iot:role', 'iot-attribute:role-reading')) {
             cat._reading = cid
         }
 
