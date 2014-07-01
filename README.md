@@ -1,5 +1,5 @@
-= IOTDB-Home
-== Introduction
+# IOTDB-Home
+## Introduction
 
 A web-based interface to your gizmos, using IOTDB and Node.
 IOTDB-Home uses introspection to automatically figure out 
@@ -8,12 +8,12 @@ the interface to be displayed/
 Full documentation is here: 
 [https://iotdb.org/docs/home/introduction](https://iotdb.org/docs/home/introduction)
 
-== Screenshots
+## Screenshots
 
 ![Mobile form factor](images/Home1.png)
 
-== Troubleshooting
-=== EACCES 
+## Troubleshooting
+### EACCES 
 
 If you get an error something like during <code>npm install</code>
 
