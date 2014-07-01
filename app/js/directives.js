@@ -2,47 +2,57 @@
 
 /* Directives */
 
-var draw_circle = function(context, $scope) {
-    var paramd = {
+var draw_circle = function(e_canvas, context, $scope) {
+    var drawd = {
         fillStyle: "#000000",
         strokeStyle: "#CCCCCC",
         textColor: "#666666",
         text: "",
+        symbol: "",
         lineWidth: 8,
-        centerX: 24,
-        centerY: 24,
-        radius: 20,
+        centerX: 30,
+        centerY: 30,
+        radius: 26,
         guageColor: "#666666",
         guage: null
     }
+
+    e_canvas.width = drawd.centerX * 2
+    e_canvas.height = drawd.centerY * 2
 
     if ($scope && $scope.attribute && $scope.state) {
         var reading_key = $scope.attribute._reading
         var type = $scope.attribute._type
         var visualizer = js.visualizers[type]
         if (!visualizer) {
-            paramd.fillStyle = "#FFFFFF"
+            drawd.fillStyle = "#FFFFFF"
         } else {
-            var vd = visualizer({
-                value: $scope.state[reading_key],
-                purpose: $scope.attribute._purpose,
-                type: type
-            })
+            var pd = {}
+            for (var key in $scope.attribute) {
+                pd[key] = $scope.attribute[key]
+            }
+            pd.value = $scope.state[reading_key]
+            pd.purpose = $scope.attribute._purpose
+            pd.type = type
+            var vd = visualizer(pd)
 
             if (vd.color) {
-                paramd.fillStyle = vd.color
+                drawd.fillStyle = vd.color
             }
             if (vd.text) {
-                paramd.text = vd.text
+                drawd.text = vd.text
+            }
+            if (vd.symbol) {
+                drawd.symbol = vd.symbol
             }
             if (vd.textColor) {
-                paramd.textColor = vd.textColor
+                drawd.textColor = vd.textColor
             }
             if (vd.guage) {
-                paramd.guage = vd.guage
+                drawd.guage = vd.guage
             }
             if (vd.guageColor) {
-                paramd.guageColor = vd.guageColor
+                drawd.guageColor = vd.guageColor
             }
         }
     }
@@ -50,27 +60,27 @@ var draw_circle = function(context, $scope) {
     var startPoint = (Math.PI/180)*0;
     var endPoint = (Math.PI/180)*360;
     
-    context.fillStyle = paramd.fillStyle
-    context.strokeStyle = paramd.strokeStyle
-    context.lineWidth = paramd.lineWidth;
+    context.fillStyle = drawd.fillStyle
+    context.strokeStyle = drawd.strokeStyle
+    context.lineWidth = drawd.lineWidth;
 
-    context.clearRect(0, 0, 48, 48)
+    context.clearRect(0, 0, drawd.centerX * 2, drawd.centerY * 2)
 
     context.beginPath();
-    context.arc(paramd.centerX,paramd.centerY,paramd.radius,startPoint,endPoint,true);
+    context.arc(drawd.centerX,drawd.centerY,drawd.radius,startPoint,endPoint,true);
     context.stroke();
     context.fill();
     context.closePath();
     /*
     */
 
-    if (paramd.guage !== null) {
+    if (drawd.guage !== null) {
         var endPoint = (Math.PI/180)*135
-        var startPoint = (Math.PI/180)*(135+270*paramd.guage)
-        context.strokeStyle = paramd.guageColor;
+        var startPoint = (Math.PI/180)*(135+270*drawd.guage)
+        context.strokeStyle = drawd.guageColor;
         
         context.beginPath();
-        context.arc(paramd.centerX,paramd.centerY,paramd.radius,startPoint,endPoint,true);
+        context.arc(drawd.centerX,drawd.centerY,drawd.radius,startPoint,endPoint,true);
         context.stroke();
         context.fill();
     }
@@ -78,17 +88,22 @@ var draw_circle = function(context, $scope) {
     var startPoint = (Math.PI/180)*0;
     var endPoint = (Math.PI/180)*360;
     context.beginPath();
-    context.arc(paramd.centerX,paramd.centerY,paramd.radius,startPoint,endPoint,true);
+    context.arc(drawd.centerX,drawd.centerY,drawd.radius,startPoint,endPoint,true);
     context.fill();
     context.closePath();
     /*
     */
 
-    if (paramd.text) {
-        context.fillStyle = paramd.textColor
+    if (drawd.text) {
+        var text = drawd.text
+        if (drawd.symbol) {
+            text += drawd.symbol
+        }
+
+        context.fillStyle = drawd.textColor
         context.font = "14px Helvetica Neue";
         context.textAlign = 'center';
-        context.fillText(paramd.text, 24, 29, 48);
+        context.fillText(text, drawd.centerX, drawd.centerY + 5, drawd.centerX * 2);
     }
 }
 
@@ -103,10 +118,10 @@ angular.module('myApp.directives', [])
             var e_canvas = j_a.find("canvas")[0]
             var context = e_canvas.getContext('2d');
 
-            draw_circle(context, $scope)
+            draw_circle(e_canvas, context, $scope)
 
             $scope.$watch('state', function() {
-                draw_circle(context, $scope)
+                draw_circle(e_canvas, context, $scope)
             })
         }
       };

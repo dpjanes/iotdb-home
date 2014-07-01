@@ -265,7 +265,7 @@ var precook_attributes = function(thing) {
             delete cat['_use']
         }
 
-        var atd = {}
+        var atd = _.deepCopy(cat)
         atd._thing_id = thing.thing_id()
 
         for (var key in cat) {
@@ -609,7 +609,9 @@ var webserver_thing_state = function(request, result) {
         return
     }
 
-    thing.update(request.query)
+    if (!_.isEmpty(request.query)) {
+        thing.update(request.query)
+    }
     
     result.set('Content-Type', 'text/plain');
     result.send(JSON.stringify(thing.state(), null, 2))

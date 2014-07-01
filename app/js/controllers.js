@@ -92,7 +92,10 @@ var safe_apply = function(scope, fn) {
 angular.module('myApp.controllers', [])
     .controller('RoomsController', [
         '$scope', '$http', '$rootScope', function($scope, $http, $rootScope) {
-        mqtt_js.init($rootScope)
+        if ($rootScope) {
+            mqtt_js.init($rootScope)
+        }
+
         $http
             .get('/api/rooms')
             .success(function(data) {

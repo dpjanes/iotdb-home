@@ -8,23 +8,45 @@ var editor = function(paramd) {
 }
 
 var visualizer = function(paramd) {
-    console.log("HERE:ABC", paramd)
     var d = {
         color: "#F9F9F9",
         text: ""
     }
 
-    if (paramd.unit == "iot-unit::math.fraction.unit") {
+    if (paramd['iot:unit'] == "iot-unit:math.fraction.unit") {
         d.guage = paramd.value
+    } else if (paramd['iot:unit'] == "iot-unit:math.fraction.percent") {
+        d.guage = paramd.value / 100
+        d.symbol = "%"
+    } else if (paramd['iot:unit'] == "iot-unit:temperature.si.celsius") {
+        d.symbol = "°C"
+    } else if (paramd['iot:unit'] == "iot-unit:temperature.imperial.fahrenheit") {
+        d.symbol = "°F"
     } else if ((paramd.minimum !== undefined) && (paramd.maximum !== undefined)) {
     }
 
+    /*j
+    if (d.guage !== undefined) {
+        d.guage = Math.max(0, d.guage)
+        d.guage = Math.min(1, d.guage)
+    }
+    */
+
+    var precision = 3
     try {
-        d.text = paramd.value.toFixed(2)
+        if (paramd["iot:arithmetic-precision"] !== undefined) {
+            precision = parseInt(paramd["iot:arithmetic-precision"])
+        }
+    }
+    catch (x) {
+    }
+    try {
+        d.text = paramd.value.toFixed(precision)
     }
     catch (x) {
     }
 
+    console.log(paramd, d)
     return d
 }
 
