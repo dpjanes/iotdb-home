@@ -23,6 +23,11 @@ var open = require('open');
 
 var home_mqtt = require("./home_mqtt")
 
+var bunyan = require('bunyan');
+var logger = bunyan.createLogger({
+    name: 'iotdb-home',
+    module: 'home',
+});
 
 /* --- Settings section --- */
 var iot = null
@@ -165,11 +170,9 @@ var precook_things = function(all_things) {
         }
         // thing.__precooked = true
 
-        var meta_thing = thing.meta_thing()
-        // console.log("HERE:A", meta_thing)
-        var meta_thing = meta_thing.dictionary()
-        for (var key in meta_thing) {
-            var value = meta_thing[key]
+        var metad = thing.meta().state()
+        for (var key in metad) {
+            var value = metad[key]
             var key_slug = iotdb.helpers.slugify(key)
             thing[key_slug] = value
         }
@@ -468,7 +471,10 @@ var get_thing = function(thing_id) {
 /**
  */
 var webserver_api = function(request, result) {
-    console.log("+ webserver_api")
+    logger.info({
+        method: "webserver_api"
+    }, "called");
+
     var jd = {
         "api_rooms": make_api_room({ root: true }),
         "api_things": make_api_thing({ root: true }),
@@ -481,7 +487,10 @@ var webserver_api = function(request, result) {
 /**
  */
 var webserver_rooms = function(request, result) {
-    console.log("+ webserver_rooms")
+    logger.info({
+        method: "webserver_rooms"
+    }, "called");
+
     var rds = []
 
     var rooms = make_rooms()
@@ -519,7 +528,11 @@ var webserver_rooms = function(request, result) {
  *  be called too often.
  */
 var webserver_room = function(request, result) {
-    console.log("+ webserver_room")
+    logger.info({
+        method: "webserver_room",
+        params: request.params
+    }, "called");
+
     var room_id = request.params.room_id
     var room_path = request.path
 
@@ -554,7 +567,10 @@ var webserver_room = function(request, result) {
 /**
  */
 var webserver_things = function(request, result) {
-    console.log("+ webserver_things")
+    logger.info({
+        method: "webserver_things"
+    }, "called");
+
     var api_things = []
     var jd = {
         "api_things" : api_things
@@ -573,13 +589,17 @@ var webserver_things = function(request, result) {
 /**
  */
 var webserver_thing = function(request, result) {
-    console.log("+ webserver_thing")
+    logger.info({
+        method: "webserver_thing",
+        thing_id: request.params.thing_id
+    }, "called");
+
     var thing = get_thing(request.params.thing_id)
     if (!thing) {
         return
     }
 
-    var name = thing.meta_thing().get("iot:name")
+    var name = thing.meta().get("iot:name")
     if (_.isEmpty(name)) {
         name = thing.name
     }
@@ -603,7 +623,11 @@ var webserver_thing = function(request, result) {
 /**
  */
 var webserver_thing_state = function(request, result) {
-    console.log("+ webserver_state")
+    logger.info({
+        method: "webserver_thing_state",
+        thing_id: request.params.thing_id
+    }, "called");
+
     var thing = get_thing(request.params.thing_id)
     if (!thing){
         return
@@ -620,7 +644,11 @@ var webserver_thing_state = function(request, result) {
 /**
  */
 var webserver_thing_attributes = function(request, result) {
-    console.log("+ webserver_attributes")
+    logger.info({
+        method: "webserver_thing_attributes",
+        thing_id: request.params.thing_id
+    }, "called");
+
     var thing = get_thing(request.params.thing_id)
     if (!thing){
         return
@@ -641,7 +669,9 @@ var webserver_thing_attributes = function(request, result) {
 var home_page = null
 
 var webserver_home = function(request, result) {
-    console.log("+ webserver_home")
+    logger.info({
+        method: "webserver_thing_home",
+    }, "called");
 
     if (!home_page) {
         var home_template = path.join(__dirname, 'app', 'index.html')
@@ -731,27 +761,29 @@ var webserver_main = function() {
 /**
  */
 var iotdb_main = function() {
-    iot = new iotdb.IOT({ 
-        models_path: "node_modules/iotdb-models//",
-        load_models: true,
-        load_drivers: true,
-        load_things: true,
-        iotdb_places_get: true,
-        discover: true
-    })
-    iot.on_thing(function(iot, thing) {
-        console.log("+ NEW THING", thing.thing_id())
+    iot = iotdb.iot()
+    iot.on_thing(function(thing) {
+        logger.info({
+            method: "iotdb_main",
+            thing_id: thing.thing_id()
+        }, "new Thing found");
+
         home_page = null
         mqtt_update_things(thing)
 
         thing.on_change(function() {
-            console.log("+ state", thing.thing_id(), thing.state())
+            logger.info({
+                method: "iotdb_main/on_change",
+                thing_id: thing.thing_id(),
+                state: thing.state()
+            }, "thing state changed")
+
             mqtt_update_thing(thing)
         })
 
         thing.pull()
     })
-    iot.on_things(function(iot) {
+    iot.on_things(function() {
         iotdb.helpers.dump_things(iot, iot.things())
     })
 }

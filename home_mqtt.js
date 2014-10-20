@@ -19,12 +19,21 @@ var util = require('util');
 var url = require('url');
 var mqtt_ws = require('./mqtt-ws')
 
+var bunyan = require('bunyan');
+var logger = bunyan.createLogger({
+    name: 'iotdb-home',
+    module: 'home_mqtt',
+});
+
 /**
  *  Create an MQTT server
  */
 exports.create_server = function(mqttd) {
     if (!mqttd.local) {
-        console.log("- home_mqtt.create_server: not local, so not doing this")
+        logger.warn({
+            method: "create_server",
+            cause: "only need to create a server for MQTT running inside this"
+        }, "not local, so not doing this");
         return
     }
 
@@ -176,16 +185,32 @@ var client = null
 exports.publish = function(mqttd, topic, data) {
     if (client == null) {
         console.log("- mqtt_home.publish", "connecting", mqttd.mqtt_port, mqttd.mqtt_host)
+        logger.info({
+            method: "publish",
+            port: mqttd.mqtt_port,
+            host: mqttd.mqtt_host
+        }, "connecting to MQTT");
         client = mqtt.createClient(mqttd.mqtt_port, mqttd.mqtt_host)
         client.on('error', function() {
-            console.log("# mqtt_home.publish/error", "unexpected", arguments)
+            logger.info({
+                method: "publish/on(error)",
+                arguments: arguments
+            }, "unexpected");
         })
         client.on('clone', function() {
-            console.log("# mqtt_home.publish/error", "unexpected", arguments)
+            logger.info({
+                method: "publish/on(clone)",
+                arguments: arguments
+            }, "unexpected");
         })
     }
 
     client.publish(topic, data)
 
-    console.log("- home_mqtt.publish", topic, data)
+    // console.log("- home_mqtt.publish", topic, data)
+    logger.info({
+        method: "publish",
+        topic: topic,
+        data: data
+    }, "published");
 }
